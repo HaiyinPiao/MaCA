@@ -38,7 +38,7 @@ if __name__ == "__main__":
     red_agent_obs_ind = 'feature'
     blue_agent_obs_ind = blue_agent.get_obs_ind()
     # make env
-    env = Environment(MAP_PATH, red_agent_obs_ind, blue_agent_obs_ind, render=RENDER)
+    env = Environment(MAP_PATH, red_agent_obs_ind, blue_agent_obs_ind, max_step=1000, render=RENDER)
     # get map info
     size_x, size_y = env.get_map_size()
     red_detector_num, red_fighter_num, blue_detector_num, blue_fighter_num = env.get_unit_num()
@@ -52,6 +52,7 @@ if __name__ == "__main__":
     for x in range(MAX_EPOCH):
         step_cnt = 0
         env.reset()
+        episodic_reward = 0
         while True:
             obs_list = []
             action_list = []
@@ -69,11 +70,11 @@ if __name__ == "__main__":
                 true_action = np.array([0, 1, 0, 0], dtype=np.int32)
                 if red_obs_dict['fighter'][y]['alive']:
                     obs_got_ind[y] = True
-                    tmp_img_obs = red_obs_dict['fighter'][y]['screen']
-                    tmp_img_obs = tmp_img_obs.transpose(2, 0, 1)
+                    # tmp_img_obs = red_obs_dict['fighter'][y]['screen']
+                    # tmp_img_obs = tmp_img_obs.transpose(2, 0, 1)
                     tmp_info_obs = red_obs_dict['fighter'][y]['info']
-                    tmp_action = fighter_model.choose_action(tmp_img_obs, tmp_info_obs)
-                    obs_list.append({'screen': copy.deepcopy(tmp_img_obs), 'info': copy.deepcopy(tmp_info_obs)})
+                    tmp_action = fighter_model.choose_action(tmp_info_obs)
+                    obs_list.append({'info': copy.deepcopy(tmp_info_obs)})
                     action_list.append(tmp_action)
                     # action formation
                     true_action[0] = int(360 / COURSE_NUM * int(tmp_action[0] / ATTACK_IND_NUM))
@@ -86,19 +87,23 @@ if __name__ == "__main__":
             red_detector_reward, red_fighter_reward, red_game_reward, blue_detector_reward, blue_fighter_reward, blue_game_reward = env.get_reward()
             detector_reward = red_detector_reward + red_game_reward
             fighter_reward = red_fighter_reward + red_game_reward
+
+            episodic_reward += sum(fighter_reward)
             # save repaly
             red_obs_dict, blue_obs_dict = env.get_obs()
             for y in range(red_fighter_num):
                 if obs_got_ind[y]:
-                    tmp_img_obs = red_obs_dict['fighter'][y]['screen']
-                    tmp_img_obs = tmp_img_obs.transpose(2, 0, 1)
+                    # tmp_img_obs = red_obs_dict['fighter'][y]['screen']
+                    # tmp_img_obs = tmp_img_obs.transpose(2, 0, 1)
                     tmp_info_obs = red_obs_dict['fighter'][y]['info']
                     fighter_model.store_transition(obs_list[y], action_list[y], fighter_reward[y],
-                                                   {'screen': copy.deepcopy(tmp_img_obs), 'info': copy.deepcopy(tmp_info_obs)})
+                                                   {'info': copy.deepcopy(tmp_info_obs)})
 
             # if done, perform a learn
             if env.get_done():
                 # detector_model.learn()
+                print("episodic reward:", episodic_reward)
+                episodic_reward = 0
                 fighter_model.learn()
                 break
             # if not done learn when learn interval
