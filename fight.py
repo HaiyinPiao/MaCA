@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--map", type=str, default="1000_1000_2_10_vs_2_10", help='map name, only name, not file path')
     parser.add_argument("--agent1", type=str, default="fix_rule", help='agent 1 name, only name, not path')
     parser.add_argument("--agent2", type=str, default="fix_rule", help='agent 2 name, only name, not path')
-    parser.add_argument("--round", type=int, default=1, help='play rounds')
+    parser.add_argument("--round", type=int, default=50, help='play rounds')
     parser.add_argument("--fps", type=float, default=0, help='display fps')
     parser.add_argument("--max_step", type=int, default=5000, help='max step in a round')
     parser.add_argument("--random_pos", action="store_true", help='if the initial positions are random or fix')

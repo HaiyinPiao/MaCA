@@ -17,7 +17,7 @@ from interface import Environment
 from train.simple import dqn
 MAP_PATH = 'maps/1000_1000_fighter10v10.map'
 
-RENDER = True
+RENDER = False
 MAX_EPOCH = 1000
 BATCH_SIZE = 200
 LR = 0.01                   # learning rate
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # create blue agent
     blue_agent = Agent()
     # get agent obs type
-    red_agent_obs_ind = 'simple'
+    red_agent_obs_ind = 'feature'
     blue_agent_obs_ind = blue_agent.get_obs_ind()
     # make env
     env = Environment(MAP_PATH, red_agent_obs_ind, blue_agent_obs_ind, render=RENDER)
@@ -59,6 +59,7 @@ if __name__ == "__main__":
             # get obs
             if step_cnt == 0:
                 red_obs_dict, blue_obs_dict = env.get_obs()
+
             # get action
             # get blue action
             blue_detector_action, blue_fighter_action = blue_agent.get_action(blue_obs_dict, step_cnt)
